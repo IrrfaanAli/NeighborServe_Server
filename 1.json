@@ -1,0 +1,39 @@
+[{
+  "user_id": 101,
+  "user_img": "./user1.png",
+  "user_fullname": "Amit Datta",
+  "user_name": "amit01",
+  "user_email": "amit01@gmail.com",
+  "user_pass": "iamamit123",
+  "user_dob": "09/12/2000",
+  "user_gender": "Male",
+  "user_type": "Service Provider",
+  "user_category": "Computer Service",
+  "user_status": "Premium",
+  "user_location": "South Badda, Gulshan, Dhaka",
+  "user_lat": 23.7745978,
+  "user_lon": 90.4219535,
+  "user_regYear": 2023,
+  "user_hireCount": 12,
+  "user_verficationStatus": "50%",
+  "user_serviceDetails": "I'm a pro computer service offering top-notch service.",
+  "user_respondTime": 11,
+  "user_reviews": [{
+    "reviewId": 1,
+    "reviewer": "Mr. Rahman 1",
+    "reviewerImg": "./user2.png",
+    "review": "Great computer service service by user 1.",
+    "date": "August 16, 2022"
+  }],
+  "appointments": [
+    {
+        "appointmentId": 1,
+        "user_name": "User Name",
+        "user_category": "User Category",
+        "dateAdded": "2023-10-26",
+        "appointmentTime": "14:30",
+        "appointmentDate": "2023-10-28",
+        "note": "Appointment note..."
+    }
+]
+}]

@@ -4,7 +4,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bodyParser = require("body-parser");
 require("dotenv").config();
-const { ObjectId } = require('mongodb'); 
+const { ObjectId } = require("mongodb");
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    const usersCollection = client.db("NeighborServe").collection("User");
+    const usersCollection = client.db("NeighborServe").collection("User1");
 
     app.get("/users", async (req, res) => {
       const category = req.query.category;
@@ -35,11 +35,26 @@ async function run() {
       res.send(result);
     });
 
-  
-    app.get('/usersProfile', async (req, res) => {
+    app.get("/usersProfile", async (req, res) => {
       const id = req.query.id;
-      const filter = { _id: new ObjectId(id) }; 
+      const filter = { _id: new ObjectId(id) };
       const result = await usersCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    app.patch("/update_location/:userId", async (req, res) => {
+      const id = req.params.userId;
+      const { user_lat, user_lon, user_location } = req.body;
+      // console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          user_lat,
+          user_lon,
+          user_location,
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 

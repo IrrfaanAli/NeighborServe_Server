@@ -84,6 +84,7 @@ async function run() {
 
       // Create an array of all possible time slots you want to consider
       const allTimeSlots = [
+        "Choose a time slot",
         "9:00 AM",
         "10:00 AM",
         "11:00 AM",
@@ -111,46 +112,6 @@ async function run() {
       }
 
       res.json({ availableTimeSlots: allTimeSlots });
-    });
-
-    app.get("/view_appointment/:userId", async (req, res) => {
-      const id = req.params.userId;
-      const filter = { _id: new ObjectId(id) };
-      const result = await usersCollection.find(filter).toArray();
-
-      if (result.length > 0) {
-        const appointments = result[0].appointments;
-        res.json({ appointments });
-      } else {
-        // Handle the case when the user is not found
-        res.status(404).json({ error: "User not found" });
-      }
-    });
-    app.get("/appointment_details/:userId/:appointmentId", async (req, res) => {
-      const userId = req.params.userId;
-      const appointmentId = req.params.appointmentId;
-
-      try {
-        // Assuming your appointments are stored as an array of objects in your user document
-        const filter = { _id: new ObjectId(userId) };
-        const user = await usersCollection.findOne(filter);
-
-        if (user) {
-          const appointment = user.appointments.find(
-            (appointment) => appointment.appointmentId === appointmentId
-          );
-
-          if (appointment) {
-            res.status(200).json(appointment);
-          } else {
-            res.status(404).json({ error: "Appointment not found" });
-          }
-        } else {
-          res.status(404).json({ error: "User not found" });
-        }
-      } catch (error) {
-        res.status(500).json({ error: "Error fetching appointment" });
-      }
     });
 
     app.post("/create-appointment/:userId", async (req, res) => {
@@ -199,6 +160,94 @@ async function run() {
         res.status(500).json({ error: "Error adding appointments" });
       }
     });
+
+    app.get("/view_appointment/:userId", async (req, res) => {
+      const id = req.params.userId;
+      const filter = { _id: new ObjectId(id) };
+      const result = await usersCollection.find(filter).toArray();
+
+      if (result.length > 0) {
+        const appointments = result[0].appointments;
+        res.json({ appointments });
+      } else {
+        // Handle the case when the user is not found
+        res.status(404).json({ error: "User not found" });
+      }
+    });
+
+    app.get("/appointment_details/:userId/:appointmentId", async (req, res) => {
+      const userId = req.params.userId;
+      const appointmentId = req.params.appointmentId;
+
+      try {
+        // Assuming your appointments are stored as an array of objects in your user document
+        const filter = { _id: new ObjectId(userId) };
+        const user = await usersCollection.findOne(filter);
+
+        if (user) {
+          const appointment = user.appointments.find(
+            (appointment) => appointment.appointmentId === appointmentId
+          );
+
+          if (appointment) {
+            res.status(200).json(appointment);
+          } else {
+            res.status(404).json({ error: "Appointment not found" });
+          }
+        } else {
+          res.status(404).json({ error: "User not found" });
+        }
+      } catch (error) {
+        res.status(500).json({ error: "Error fetching appointment" });
+      }
+    });
+
+    app.delete(
+      "/cancel_appointment/:userId/:appointmentId",
+      async (req, res) => {
+        const userId = req.params.userId;
+        const appointmentId = req.params.appointmentId;
+        console.log("userId:", userId);
+        console.log("appointmentId:", appointmentId);
+
+        const filter = { _id: new ObjectId(userId) };
+        const update = {
+          $pull: { appointments: { appointmentId: appointmentId } },
+        };
+
+        try {
+          const document = await usersCollection.findOne(filter);
+          console.log("Document:", document);
+
+          if (document) {
+            const appointments = document.appointments;
+            const appointment = appointments.find(
+              (app) => app.appointmentId === appointmentId
+            );
+
+            if (appointment) {
+              const userId2 = appointment.pro_id;
+
+              const filter2 = { _id: new ObjectId(userId2) };
+              const update2 = {
+                $pull: { appointments: { appointmentId: appointmentId } },
+              };
+              const result = await usersCollection.updateOne(filter, update);
+              const result2 = await usersCollection.updateOne(filter2, update2);
+            } else {
+              res.status(404).json({ error: "Appointment not found" });
+            }
+          } else {
+            res.status(404).json({ error: "User not found" });
+          }
+
+          // Send a success response or other appropriate response here
+        } catch (error) {
+          console.error("Error:", error);
+          res.status(500).json({ error: "An error occurred" });
+        }
+      }
+    );
 
     await client.db("admin").command({ ping: 1 });
     console.log(

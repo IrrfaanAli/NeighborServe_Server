@@ -14,10 +14,13 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/users", users);
+app.use("/providers", providers);
 
 app.get("/", (req, res) => {
   res.send("hello");
 });
+
+
 
 app.listen(port, () => {
   console.log("hello from port 5000");

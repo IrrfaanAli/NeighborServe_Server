@@ -26,16 +26,16 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    const usersCollection = client.db("NeighborServe").collection("User1");
+    const usersCollection = client.db("NeighborServe").collection("UsersData");
 
-    app.get("/users", async (req, res) => {
+    app.get("/providers", async (req, res) => {
       const category = req.query.category;
       const filter = { user_category: category };
       const result = await usersCollection.find(filter).toArray();
       res.send(result);
     });
 
-    app.get("/usersProfile", async (req, res) => {
+    app.get("/providersProfile", async (req, res) => {
       const id = req.query.id;
       const filter = { _id: new ObjectId(id) };
       const result = await usersCollection.find(filter).toArray();
@@ -57,18 +57,6 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-
-    // app.get("/appointment", async (req, res) => {
-    //   const id = req.query.id;
-    //   const filter = { _id: new ObjectId(id) };
-    //   const result = await usersCollection.find(filter).toArray();
-    //   const slots = {
-    //     today_slots: result[0].today_slots,
-    //     tomorrow_slots: result[0].tomorrow_slots,
-    //   };
-    //   res.send(slots);
-    //   // res.send("Hello: "+id)
-    // });
 
     app.get("/appointment", async (req, res) => {
       const userId = req.query.id;

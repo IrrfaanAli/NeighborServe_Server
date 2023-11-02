@@ -22,7 +22,6 @@ router.get("/providersProfile", async (req, res) => {
 router.patch("/update_location/:userId", async (req, res) => {
   const id = req.params.userId;
   const { user_lat, user_lon, user_location } = req.body;
-  // console.log(id);
   const filter = { _id: new ObjectId(id) };
   const updateDoc = {
     $set: {
@@ -66,13 +65,27 @@ router.get("/appointment", async (req, res) => {
     "10:00 PM",
   ];
 
-  // Iterate through the appointments and remove already routerointed time slots
+  // Get the current time
+  const currentTime = new Date();
+  const currentHour = currentTime.getHours();
+  const currentMinutes = currentTime.getMinutes();
+
+  // Iterate through the appointments and remove already appointed time slots
   for (const appointment of appointments) {
     const appointmentTime = appointment.appointmentTime;
+    const [hour, minutes] = appointmentTime.split(":");
+    const appointmentHour = parseInt(hour, 10);
+    const appointmentMinutes = parseInt(minutes, 10);
 
-    if (allTimeSlots.includes(appointmentTime)) {
-      // If the appointment time exists in allTimeSlots, remove it
-      allTimeSlots.splice(allTimeSlots.indexOf(appointmentTime), 1);
+    if (
+      appointmentHour < currentHour ||
+      (appointmentHour === currentHour && appointmentMinutes <= currentMinutes)
+    ) {
+      // If the appointment has already passed, remove it from available time slots
+      const index = allTimeSlots.indexOf(appointmentTime);
+      if (index !== -1) {
+        allTimeSlots.splice(index, 1);
+      }
     }
   }
 
@@ -138,45 +151,38 @@ router.get("/view_appointment/:userId", async (req, res) => {
   }
 });
 
-router.get(
-  "/appointment_details/:userId/:appointmentId",
-  async (req, res) => {
-    const userId = req.params.userId;
-    const appointmentId = req.params.appointmentId;
+router.get("/appointment_details/:userId/:appointmentId", async (req, res) => {
+  const userId = req.params.userId;
+  const appointmentId = req.params.appointmentId;
 
-    try {
-      // Assuming your appointments are stored as an array of objects in your user document
-      const filter = { _id: new ObjectId(userId) };
-      const user = await usersCollection.findOne(filter);
+  try {
+    // Assuming your appointments are stored as an array of objects in your user document
+    const filter = { _id: new ObjectId(userId) };
+    const user = await usersCollection.findOne(filter);
 
-      if (user) {
-        const appointment = user.appointments.find(
-          (appointment) =>
-            appointment.appointmentId === appointmentId
-        );
+    if (user) {
+      const appointment = user.appointments.find(
+        (appointment) => appointment.appointmentId === appointmentId
+      );
 
-        if (appointment) {
-          res.status(200).json(appointment);
-        } else {
-          res.status(404).json({ error: "appointment not found" });
-        }
+      if (appointment) {
+        res.status(200).json(appointment);
       } else {
-        res.status(404).json({ error: "User not found" });
+        res.status(404).json({ error: "appointment not found" });
       }
-    } catch (error) {
-      res.status(500).json({ error: "Error fetching appointment" });
+    } else {
+      res.status(404).json({ error: "User not found" });
     }
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching appointment" });
   }
-);
+});
 
 router.delete(
   "/cancel_appointment/:userId/:appointmentId",
   async (req, res) => {
     const userId = req.params.userId;
     const appointmentId = req.params.appointmentId;
-    console.log("userId:", userId);
-    console.log("appointmentId:", appointmentId);
-
     const filter = { _id: new ObjectId(userId) };
     const update = {
       $pull: { appointments: { appointmentId: appointmentId } },
@@ -184,7 +190,6 @@ router.delete(
 
     try {
       const document = await usersCollection.findOne(filter);
-      console.log("Document:", document);
 
       if (document) {
         const appointments = document.appointments;

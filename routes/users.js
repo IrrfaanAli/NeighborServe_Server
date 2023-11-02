@@ -4,7 +4,7 @@ const client = require("../database/db");
 const { ObjectId } = require("mongodb");
 const bcrypt = require("bcrypt");
 
-const usersCollection = client.db("NeighborServe").collection("User");
+const usersCollection = client.db("NeighborServe").collection("UsersData");
 
 router.get("/", async (req, res) => {
   const result = await usersCollection.find().limit(5).toArray();

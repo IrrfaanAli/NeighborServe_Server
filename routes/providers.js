@@ -12,6 +12,13 @@ router.get("/providers", async (req, res) => {
   res.send(result);
 });
 
+router.get("/getId/:userEmail", async (req, res) => {
+  const email = req.params.userEmail;
+  const filter = { user_email: email };
+  const result = await usersCollection.find(filter).toArray();
+  res.send(result);
+});
+
 router.get("/providersProfile", async (req, res) => {
   const id = req.query.id;
   const filter = { _id: new ObjectId(id) };

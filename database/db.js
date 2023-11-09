@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion  } = require('mongodb');
 
 const uri = "mongodb+srv://neighborServe:9lraD8JqrISpGfNq@cluster0.ymwhs5q.mongodb.net/"
 

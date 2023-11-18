@@ -5,11 +5,111 @@ const { ObjectId } = require("mongodb");
 
 const usersCollection = client.db("NeighborServe").collection("UsersData");
 
-router.get("/providers", async (req, res) => {
-  const category = req.query.category;
-  const filter = { user_category: category };
+router.get("/api/:id/:category", async (req, res) => {
+  const id = req.params.id; // Use req.params.id to get the id from route parameters
+  const category = req.params.category;
+  const type = "Service Provider";
+  const filter = { user_category: category, user_type: type };
   const result = await usersCollection.find(filter).toArray();
-  res.send(result);
+  const filter2 = { _id: new ObjectId(id) };
+  const document = await usersCollection.find(filter2).toArray();
+  const userLat = document[0].user_lat;
+  const userLon = document[0].user_lon;
+
+  // haversine algorithm to calculate distances between 2 coordinates
+  function toRadians(degrees) {
+    return degrees * (Math.PI / 180);
+  }
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in kilometers
+    const lat1Rad = toRadians(lat1);
+    const lon1Rad = toRadians(lon1);
+    const lat2Rad = toRadians(lat2);
+    const lon2Rad = toRadians(lon2);
+    const dlon = lon2Rad - lon1Rad;
+    const dlat = lat2Rad - lat1Rad;
+
+    const a =
+      Math.sin(dlat / 2) ** 2 +
+      Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dlon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    // console.log("distance: " + distance);
+    return distance;
+  }
+
+  const dataArrayUpdated = result.map((place) => {
+    const distance = haversine(
+      userLat,
+      userLon,
+      place.user_lat,
+      place.user_lon
+    );
+    return { ...place, distance };
+  });
+
+  // Sort the dataArrayWithDistances by distance in ascending order
+  dataArrayUpdated.sort((a, b) => a.distance - b.distance);
+
+  // dataArrayUpdated.slice(0, 5).map((data)=>{
+  //   const newData=data;
+  // })
+  // const modifiedArray = dataArrayUpdated.slice(0, 5).map((data) => {});
+  const dataArrayUpdatedArray = [...dataArrayUpdated];
+  const firstFiveElements = dataArrayUpdatedArray.slice(0, 3);
+  
+  res.send(firstFiveElements);
+});
+
+router.get("/providers/:id/:category", async (req, res) => {
+  const id = req.params.id; // Use req.params.id to get the id from route parameters
+  const category = req.params.category;
+  const type = "Service Provider";
+  const filter = { user_category: category, user_type: type };
+  const result = await usersCollection.find(filter).toArray();
+  const filter2 = { _id: new ObjectId(id) };
+  const document = await usersCollection.find(filter2).toArray();
+  const userLat = document[0].user_lat;
+  const userLon = document[0].user_lon;
+
+  // haversine algorithm to calculate distances between 2 coordinates
+  function toRadians(degrees) {
+    return degrees * (Math.PI / 180);
+  }
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Radius of the Earth in kilometers
+    const lat1Rad = toRadians(lat1);
+    const lon1Rad = toRadians(lon1);
+    const lat2Rad = toRadians(lat2);
+    const lon2Rad = toRadians(lon2);
+    const dlon = lon2Rad - lon1Rad;
+    const dlat = lat2Rad - lat1Rad;
+
+    const a =
+      Math.sin(dlat / 2) ** 2 +
+      Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dlon / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    // console.log("distance: " + distance);
+    return distance;
+  }
+
+  const dataArrayUpdated = result.map((place) => {
+    const distance = haversine(
+      userLat,
+      userLon,
+      place.user_lat,
+      place.user_lon
+    );
+    return { ...place, distance };
+  });
+
+  // Sort the dataArrayWithDistances by distance in ascending order
+  dataArrayUpdated.sort((a, b) => a.distance - b.distance);
+
+  res.send(dataArrayUpdated);
 });
 
 router.get("/getId/:userEmail", async (req, res) => {
@@ -40,6 +140,22 @@ router.patch("/update_location/:userId", async (req, res) => {
   const result = await usersCollection.updateOne(filter, updateDoc);
   res.send(result);
 });
+
+
+router.patch("/verification/:userId", async (req, res) => {
+  const id = req.params.userId;
+  const { user_phone, user_verificationStatus } = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      user_phone, user_verificationStatus
+    },
+  };
+  const result = await usersCollection.updateOne(filter, updateDoc);
+  res.send(result);
+});
+
+
 
 router.get("/appointment", async (req, res) => {
   const userId = req.query.id;

@@ -141,6 +141,22 @@ router.patch("/update_location/:userId", async (req, res) => {
   res.send(result);
 });
 
+
+router.patch("/verification/:userId", async (req, res) => {
+  const id = req.params.userId;
+  const { user_phone, user_verificationStatus } = req.body;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      user_phone, user_verificationStatus
+    },
+  };
+  const result = await usersCollection.updateOne(filter, updateDoc);
+  res.send(result);
+});
+
+
+
 router.get("/appointment", async (req, res) => {
   const userId = req.query.id;
   const filter = { _id: new ObjectId(userId) };

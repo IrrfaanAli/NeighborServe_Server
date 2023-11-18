@@ -344,4 +344,35 @@ router.delete(
   }
 );
 
+
+router.patch('/approved/:id', async (req, res) => {
+  const id = req.params.id;
+
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      status: 'approved'
+    },
+  };
+
+  const result = await usersCollection.updateOne(filter, updateDoc);
+  res.send(result);
+
+})
+router.patch('/denied/:id', async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      status: 'denied'
+    },
+  };
+
+  const result = await usersCollection.updateOne(filter, updateDoc);
+  res.send(result);
+
+})
+
+
 module.exports = router;

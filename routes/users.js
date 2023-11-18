@@ -18,6 +18,19 @@ router.get("/provider", async (req, res) => {
   res.send(result)
 })
 
+router.get("/alluser", async (req, res) => {
+  const query = { user_type: "user" }
+
+  const result = await usersCollection.find(query).toArray()
+  res.send(result)
+})
+router.get("/allprovider", async (req, res) => {
+  const query = { user_type: "provider" }
+
+  const result = await usersCollection.find(query).toArray()
+  res.send(result)
+})
+
 router.get("/provider/:type", async (req, res) => {
   const type = req.params.type
 
@@ -139,35 +152,39 @@ router.post("/users/googlelogin", async (req, res) => {
 router.get("/admin/:email", async (req, res) => {
   const email = req.params.email
 
-  const query = { email: email }
+  const query = { user_email: email }
 
   const user = await usersCollection.findOne(query)
 
-  const result = { admin: user?.role === "admin" }
+  const result = { admin: user?.user_type === "admin" }
 
   res.send(result)
 })
 router.get("/provider/:email", async (req, res) => {
   const email = req.params.email
 
-  const query = { email: email }
+  const query = { user_email: email }
 
   const user = await usersCollection.findOne(query)
 
-  const result = { provider: user?.role === "provider" }
+  const result = { provider: user?.user_type === "provider" }
 
   res.send(result)
 })
 router.get("/user/:email", async (req, res) => {
   const email = req.params.email
 
-  const query = { email: email }
+  const query = { user_email : email }
 
   const user = await usersCollection.findOne(query)
 
-  const result = { User: user?.role === "user" }
+  const result = { User: user?.user_type === "user" }
 
   res.send(result)
+  
 })
+
+
+
 
 module.exports = router
